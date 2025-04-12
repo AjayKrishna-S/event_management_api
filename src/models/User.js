@@ -20,6 +20,19 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please add a password'],
     minlength: 6,
     select: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'organizer', 'admin'],
+    default: 'user'
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

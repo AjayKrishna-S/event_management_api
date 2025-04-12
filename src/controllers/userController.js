@@ -34,6 +34,54 @@ console.log("okok");
   }
 });
 
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id)
+    });
+  } catch (error) {
+    res.status(401).json({ message: error.message });
+  }
+};
+
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt
+      });
+    } else {
+      res.status(404);
+      throw new Error('User not found');
+    }
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d'
@@ -41,5 +89,7 @@ const generateToken = (id) => {
 };
 
 module.exports = {
-  registerUser
+  registerUser,
+  loginUser,
+  getUserProfile
 };
